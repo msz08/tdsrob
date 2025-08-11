@@ -34,6 +34,5 @@ module.exports = new ApplicationCommand({
             );
 
         await interaction.editReply({ content: null, embeds: [embed] });
-        console.log("Testnachricht aus dem Bot!");
     }
 }).toJSON();
