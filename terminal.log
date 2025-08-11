@@ -1,0 +1,50 @@
+[16:24:07] ⚠️ Attempting to connect to the Discord bot... (1)
+[16:24:08] ℹ️ Loaded new message command: eval.js
+[16:24:08] ℹ️ Loaded new message command: help.js
+[16:24:08] ℹ️ Loaded new message command: ping.js
+[16:24:08] ℹ️ Loaded new message command: reload.js
+[16:24:08] ℹ️ Loaded new message command: setprefix.js
+[16:24:08] ℹ️ Loaded new application command: messageinfo.js
+[16:24:08] ℹ️ Loaded new application command: nachricht-verschieben.js
+[16:24:08] ℹ️ Loaded new application command: Developer.js
+[16:24:08] ℹ️ Loaded new application command: emoji-app.js
+[16:24:08] ℹ️ Loaded new application command: emoji-info.js
+[16:24:08] ℹ️ Loaded new application command: help.js
+[16:24:08] ℹ️ Loaded new application command: kick.js
+[16:24:08] ℹ️ Loaded new application command: nachricht-senden.js
+[16:24:08] ℹ️ Loaded new application command: ping.js
+[16:24:08] ℹ️ Loaded new application command: systeminfo.js
+[16:24:08] ℹ️ Loaded new application command: kick.js
+[16:24:08] ℹ️ Loaded new application command: userinfo.js
+[16:24:08] ✅ Successfully loaded 12 application commands and 5 message commands.
+[16:24:08] ℹ️ Loaded new component (type: autocomplete) : example-autocomplete.js
+[16:24:08] ℹ️ Loaded new component (type: button) : dev-buttons.js
+[16:24:08] ℹ️ Loaded new component (type: button) : move-message-button.js
+[16:24:08] ℹ️ Loaded new component (type: modal) : dev-eval-modal.js
+[16:24:08] ℹ️ Loaded new component (type: modal) : move-message-modal.js
+[16:24:08] ℹ️ Loaded new component (type: select) : example-menu.js
+[16:24:08] ℹ️ Loaded new component (type: select) : move-message-select.js
+[16:24:08] ℹ️ Loaded new component (type: select) : triggerword-status-menu.js
+[16:24:08] ✅ Successfully loaded 8 components.
+[16:24:08] ℹ️ Loaded new event: onReady.js
+[16:24:08] 🛑 Unable to load a event from the path: src/events/Events/test.js
+[16:24:08] ℹ️ Loaded new event: triggerButton.js
+[16:24:08] ℹ️ Loaded new event: triggerSelect.js
+[16:24:08] 🛑 Invalid event type undefined from event file triggerWordSelectmenu.js
+[16:24:08] ✅ Successfully loaded 3 events.
+[16:24:08] ⚠️ Registering guild (development) commands...
+[16:24:08] ✅ Logged in as TDS-Robby, took 0.982s.
+[16:24:08] ✅ Successfully registered guild (development) commands.
+[16:24:08] ℹ️ Registrierte Commands:
+- Message Information: 
+- Nachricht verschieben: 
+- dev: Developer-Befehle: eval, reload, restart
+- emoji-app: Verwalte App-Emojis (Developer Portal Emojis)
+- emoji-info: Zeigt alle verfügbaren Informationen zu einem Emoji an.
+- help: Replies with a list of available application commands.
+- kick: Kicke einen Benutzer und sende ihm eine DM mit dem Grund.
+- nachricht-senden: Sende eine Nachricht als Bot in einen bestimmten Channel.
+- ping: WebSocket-Latenz (Ping) und Roundtrip messen
+- systeminfo: Zeigt System- und Bot-Informationen an.
+- Kick User: 
+- User Information: 
