@@ -1,34 +1,46 @@
-const { ApplicationCommandOptionType, PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
-const ApplicationCommand = require('../../structure/ApplicationCommand');
+const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require("discord.js");
+const DiscordBot = require("../../client/DiscordBot");
+const ApplicationCommand = require("../../structure/ApplicationCommand");
 
 module.exports = new ApplicationCommand({
-    command: {
-        name: 'kick',
-        description: 'Kicke einen Benutzer und sende ihm eine DM mit dem Grund.',
-        type: 1,
-        default_member_permissions: PermissionFlagsBits.KickMembers.toString(),
-        options: [
-            {
-                name: 'user',
-                description: 'Der zu kickende Benutzer',
-                type: ApplicationCommandOptionType.User,
-                required: true
-            }
-            // Kein reason-Feld mehr!
-        ]
+    command: new SlashCommandBuilder()
+        .setName('kick')
+        .setDescription('Kicke einen Benutzer vom Server')
+        .addUserOption(option =>
+            option.setName('target')
+                .setDescription('Der Benutzer, der gekickt werden soll')
+                .setRequired(true)
+        ),
+    options: {
+        cooldown: 5000
     },
+    /**
+     * @param {DiscordBot} client 
+     * @param {import('discord.js').ChatInputCommandInteraction} interaction 
+     */
     run: async (client, interaction) => {
-        const user = interaction.options.getUser('user', true);
-        const member = interaction.guild.members.cache.get(user.id);
+        const target = interaction.options.getMember('target');
+        const moderator = interaction.member;
 
-        if (!member) {
-            await interaction.reply({ content: 'Benutzer ist nicht auf dem Server.', flags: 64 });
+        if (!target) {
+            await interaction.reply({
+                content: `Ungültiger Benutzer!`,
+                ephemeral: true
+            });
             return;
         }
 
-        // Modal für Grund anzeigen, mit Default-Wert
+        if (!target.kickable) {
+            await interaction.reply({
+                content: `Ich kann diesen Benutzer nicht kicken!`,
+                ephemeral: true
+            });
+            return;
+        }
+
+        // Modal für den Grund anzeigen
         const modal = new ModalBuilder()
-            .setCustomId(`kickUserModal_${user.id}`)
+            .setCustomId('kickUserModal')
             .setTitle('Kick Reason')
             .addComponents(
                 new ActionRowBuilder().addComponents(
@@ -38,38 +50,37 @@ module.exports = new ApplicationCommand({
                         .setStyle(TextInputStyle.Paragraph)
                         .setPlaceholder('z.B. Regelverstoß...')
                         .setRequired(true)
-                        .setValue('Kein Grund angegeben') // Default-Wert!
                 )
             );
 
         await interaction.showModal(modal);
 
-        // Modal-Submit-Handler
-        const filter = i => i.customId === `kickUserModal_${user.id}` && i.user.id === interaction.user.id;
+        // Listener für Modal-Submit
+        const filter = i => i.customId === 'kickUserModal' && i.user.id === interaction.user.id;
         interaction.awaitModalSubmit({ filter, time: 60_000 })
             .then(async (modalInteraction) => {
                 const reason = modalInteraction.fields.getTextInputValue('kick_reason');
 
                 // DM schicken
                 try {
-                    await user.send(
-                        `Du wurdest von **${interaction.guild.name}** gekickt.\nGrund: ${reason}`
+                    await target.user.send(
+                        `Du wurdest von **${target.guild.name}** gekickt.\nModerator: ${moderator.displayName}\nGrund: ${reason}`
                     );
                 } catch (e) {
                     // DM fehlgeschlagen
                 }
 
-                await member.kick(reason);
+                await target.kick(reason);
 
                 await modalInteraction.reply({
-                    content: `**${user.tag}** wurde gekickt. Grund: ${reason}`,
-                    flags: 64
+                    content: `User **${target.user.tag}** wurde gekickt.\nGrund: ${reason}`,
+                    ephemeral: true
                 });
             })
             .catch(async () => {
                 await interaction.followUp({
                     content: 'Kick abgebrochen: Es wurde kein Grund angegeben.',
-                    flags: 64
+                    ephemeral: true
                 });
             });
     }
