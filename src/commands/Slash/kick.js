@@ -60,6 +60,7 @@ module.exports = new ApplicationCommand({
         interaction.awaitModalSubmit({ filter, time: 60_000 })
             .then(async (modalInteraction) => {
                 const reason = modalInteraction.fields.getTextInputValue('kick_reason');
+                let dmFailed = false;
 
                 // DM schicken
                 try {
@@ -67,13 +68,18 @@ module.exports = new ApplicationCommand({
                         `Du wurdest von **${target.guild.name}** gekickt.\nModerator: ${moderator.displayName}\nGrund: ${reason}`
                     );
                 } catch (e) {
-                    // DM fehlgeschlagen
+                    dmFailed = true;
                 }
 
                 await target.kick(reason);
 
+                let replyMsg = `User **${target.user.tag}** wurde gekickt.\nGrund: ${reason}`;
+                if (dmFailed) {
+                    replyMsg += `\n⚠️ Hinweis: Die DM an den Benutzer konnte nicht gesendet werden.`;
+                }
+
                 await modalInteraction.reply({
-                    content: `User **${target.user.tag}** wurde gekickt.\nGrund: ${reason}`,
+                    content: replyMsg,
                     ephemeral: true
                 });
             })
@@ -85,3 +91,4 @@ module.exports = new ApplicationCommand({
             });
     }
 }).toJSON();
+
