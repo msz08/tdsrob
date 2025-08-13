@@ -56,15 +56,17 @@ module.exports = new ApplicationCommand({
 
                 // DM schicken
                 try {
-                    await user.send(`Du wurdest von **${interaction.guild.name}** gekickt. Grund: ${reason}`);
-                } catch {
-                    // DM konnte nicht gesendet werden
+                    await user.send(
+                        `Du wurdest von **${interaction.guild.name}** gekickt.\nModerator: ${interaction.member.displayName}\nGrund: ${reason}`
+                    );
+                } catch (e) {
+                    // DM fehlgeschlagen
                 }
 
                 await member.kick(reason);
 
                 await modalInteraction.reply({
-                    content: `**${user.tag}** wurde gekickt. Grund: ${reason}`,
+                    content: `User **${user.tag}** wurde gekickt.\nGrund: ${reason}`,
                     flags: 64
                 });
             })
