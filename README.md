@@ -1,4 +1,4 @@
-# <samp>DiscordJS-V14-Bot-Template</samp> v3
+⁸# <samp>DiscordJS-V14-Bot-Template</samp> v3
 
 ## Features
 - Supports all possible type of commands.
@@ -36,7 +36,7 @@
 
 
 7. Initialize a new project: `npm init` (To skip every step, do `npm init -y`).
-8. Install all [required dependencies](#dependencies): `npm install colors discord.js dotenv quick-yaml.db`
+8. Install all [required dependencies](#dependencies): `npm install colors discord.js dotenv quick-yaml.db node-os-utils`
 
 9. Run the command `node .` or `npm run start` to start the bot.
 10. Enjoy! The bot should be online
