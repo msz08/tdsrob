@@ -24,24 +24,15 @@ function flushInfoGroups() {
         infoGroups[type] = [];
     }
 }
-// Buffer für Info-Logs
-let infoBuffer = [];
-let infoTimer = null;
 
-function flushInfoBuffer() {
-    if (infoBuffer.length === 0) return;
-    const batched = infoBuffer.join('\n');
-    infoBuffer = [];
-    sendToDiscordWebhook(batched);
-}
 require('colors');
 const fs = require('fs');
 const https = require('https');
 require('dotenv').config();
 
-// Webhook-URL für Console aus .env
 const DISCORD_WEBHOOK_URL_CONSOLE = process.env.DISCORD_WEBHOOK_URL_CONSOLE;
 
+// Webhook-Queue für Rate-Limit und Chunking
 const webhookQueue = [];
 let isSending = false;
 
@@ -98,13 +89,29 @@ function processWebhookQueue() {
     sendChunk(0);
 }
 
-// Logging-Funktionen mit passenden Farben
+// Originale Console sichern
+const origLog = console.log;
+const origInfo = console.info;
+const origWarn = console.warn;
+const origError = console.error;
+
+// Hilfsfunktion: Prüft, ob eine Nachricht eine "Loaded ..." Gruppierungs-Info ist
+function isGroupedInfo(msg) {
+    return (
+        msg.includes('Loaded new message command') ||
+        msg.includes('Loaded new application command') ||
+        msg.includes('Loaded new component') ||
+        msg.includes('Loaded new event')
+    );
+}
+
+// Logging-Funktionen mit passenden Farben und Gruppierung
 const info = (...message) => {
     const time = new Date().toLocaleTimeString();
     let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
     const msg = [`[${time}]`, 'ℹ️', message.join(' ')].join(' ');
 
-    console.info(`[${time}]`.gray, '[Info]'.blue, message.join(' '));
+    origInfo(`[${time}]`.gray, '[Info]'.blue, message.join(' '));
     fileContent += msg + '\n';
     fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
 
@@ -133,11 +140,11 @@ const success = (...message) => {
     let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
     const msg = [`[${time}]`, '✅', message.join(' ')].join(' ');
 
-    console.info(`[${time}]`.gray, '[OK]'.green, message.join(' '));
+    origInfo(`[${time}]`.gray, '[OK]'.green, message.join(' '));
     fileContent += msg + '\n';
 
     fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-    sendToDiscordWebhook(msg, 0x2ECC71); // Grün
+    sendToDiscordWebhook(msg); // Direkt, da keine Gruppierung nötig
 }
 
 const error = (...message) => {
@@ -145,11 +152,11 @@ const error = (...message) => {
     let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
     const msg = [`[${time}]`, '🛑', message.join(' ')].join(' ');
 
-    console.error(`[${time}]`.gray, '[Error]'.red, message.join(' '));
+    origError(`[${time}]`.gray, '[Error]'.red, message.join(' '));
     fileContent += msg + '\n';
 
     fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-    sendToDiscordWebhook(msg, 0xE74C3C); // Rot
+    sendToDiscordWebhook(msg); // Direkt, da keine Gruppierung nötig
 }
 
 const warn = (...message) => {
@@ -157,11 +164,42 @@ const warn = (...message) => {
     let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
     const msg = [`[${time}]`, '⚠️', message.join(' ')].join(' ');
 
-    console.warn(`[${time}]`.gray, '[Warning]'.yellow, message.join(' '));
+    origWarn(`[${time}]`.gray, '[Warning]'.yellow, message.join(' '));
     fileContent += msg + '\n';
 
     fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-    sendToDiscordWebhook(msg, 0xF1C40F); // Gelb
+    sendToDiscordWebhook(msg); // Direkt, da keine Gruppierung nötig
 }
 
-module.exports = { info, success, error, warn }
+// Überschreibe Standard-Console-Methoden: Alles geht ins Terminal UND Discord
+// Aber Gruppen-Nachrichten ("Loaded ...") werden NICHT einzeln gesendet!
+console.log = (...args) => {
+    origLog(...args);
+    const msg = args.map(String).join(' ');
+    if (!isGroupedInfo(msg)) sendToDiscordWebhook(msg);
+};
+console.info = (...args) => {
+    origInfo(...args);
+    const msg = args.map(String).join(' ');
+    if (!isGroupedInfo(msg)) sendToDiscordWebhook(msg);
+};
+console.warn = (...args) => {
+    origWarn(...args);
+    const msg = args.map(String).join(' ');
+    if (!isGroupedInfo(msg)) sendToDiscordWebhook(msg);
+};
+console.error = (...args) => {
+    origError(...args);
+    const msg = args.map(String).join(' ');
+    if (!isGroupedInfo(msg)) sendToDiscordWebhook(msg);
+};
+
+// Uncaught Exception und Unhandled Rejection für ALLES im Discord loggen
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err.stack || err.toString());
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled Rejection:', reason && reason.stack ? reason.stack : reason);
+});
+
+module.exports = { info, success, error, warn };
